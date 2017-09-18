@@ -5,7 +5,7 @@ curl -X PUT -H "Authorization: Basic ZWxhc3RpYzpjaGFuZ2VtZQ==" -H "Content-Type:
 	      "properties": {
 	        "mot1":  { "type": "text", "analyzer": "french" },
 	        "mot2":  { "type": "text", "analyzer": "french"  },
-	        "type":  { "type": "integer" },
+	        "relation":  { "type": "integer" },
 	        "poids": { "type": "integer"}
 	      }
 	    }
