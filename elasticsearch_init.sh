@@ -11,9 +11,3 @@ curl -X PUT -H "Authorization: Basic ZWxhc3RpYzpjaGFuZ2VtZQ==" -H "Content-Type:
 	    }
     }
 }' "http://localhost:9200/relations"
-
-# we encode the original corpus in utf8
-iconv -f latin1 -t utf8 $1 > relations_utf8.txt
-
-# we index all relations
-python index_relations.py
