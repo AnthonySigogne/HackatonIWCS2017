@@ -76,7 +76,7 @@ sources = [
 "http://www.jeuxdemots.org/HACK/hack_texts/La%20Curée_II%20-%20Wikisource.htm",
 "http://www.jeuxdemots.org/HACK/hack_texts/La%20Curée_III%20-%20Wikisource.htm",
 "http://www.jeuxdemots.org/HACK/hack_texts/La%20Curée_IV%20-%20Wikisource.htm",
-"http://www.jeuxdemots.org/HACK/hack_texts/La%20Curée_V%20-%20Wikisource.htm",
+#"http://www.jeuxdemots.org/HACK/hack_texts/La%20Curée_V%20-%20Wikisource.htm",
 "http://www.jeuxdemots.org/HACK/hack_texts/La%20Curée_VI%20-%20Wikisource.htm",
 "http://www.jeuxdemots.org/HACK/hack_texts/La%20Curée_VII%20-%20Wikisource.htm",
 "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_I%20-%20Wikisource.htm",
@@ -84,7 +84,7 @@ sources = [
 "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_III%20-%20Wikisource.htm",
 "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_IV%20-%20Wikisource.htm",
 "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_V%20-%20Wikisource.htm",
-"http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_VI%20-%20Wikisource.htm",
+#"http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_VI%20-%20Wikisource.htm",
 "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_VII%20-%20Wikisource.htm",
 "http://www.jeuxdemots.org/HACK/hack_texts/Le%20Ventre%20de%20Paris_I%20-%20Wikisource.htm",
 "http://www.jeuxdemots.org/HACK/hack_texts/Le%20Ventre%20de%20Paris_II%20-%20Wikisource.htm",
@@ -109,7 +109,7 @@ sources = [
 ]
 
 for url in sources :
-    print("=== Analyzing text: "+url+"===")
+    print("=== Analyzing text: "+url+" ===")
     
     # crawl
     response = requests.get(url)
@@ -121,6 +121,6 @@ for url in sources :
     for sentence in text :
         for chunk in sentence.chunks :
             for word in chunk.words :
-                print(word.string+"¤"+word.lemma+"¤"+word.tag)
+                print (word.string.replace(";","}{")+";"+word.lemma+";"+word.tag).encode('utf-8')
 
 
