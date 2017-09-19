@@ -1,0 +1,236 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import cPickle
+import requests
+import html2text
+from pattern.fr import parsetree, singularize
+from pattern.search import search
+
+# load relations
+print "load relations..."
+relations = cPickle.load(open("relations/relations.pickled","rb"))
+#relations = {}
+
+def submit_context(context) :
+    url = "http://www.jeuxdemots.org/HACK/hack-submit.php"
+
+    querystring = {"relations_text":context,"submitter":"anthony@byprog.com","mdp":"22w2MSsj","submit":"Soumettre"}
+
+    payload = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"url\"\r\n\r\nhttps://www.byprog.com\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--"
+    headers = {
+        'content-type': "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW",
+        'cache-control': "no-cache",
+        }
+
+    response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
+
+def singularize_text(text) :
+    return " ".join([singularize(w) for w in text.split(" ")])
+
+def compute_context(sentence, match) :
+    min_left = match.group(1)[0].index-15 if match.group(1)[0].index-15 >= 0 else 0
+    #left_context = " ".join([w.string for w in sentence[min_left:match.group(1)[0].index]])
+    max_right = match.stop+15 if match.stop+15 <= len(sentence) else len(sentence)
+    #right_context = " ".join([w.string for w in sentence[match.stop+1:max_right]])
+    #return "%s %s %s"%(left_context, match.string, right_context)
+    return " ".join([w.string for w in sentence[min_left:max_right]])
+
+def write_context(f, mot1, rel, mot2, sentence, match) :
+    f.write("%s;%s;%s;%s\n"%(mot1.string.encode("utf8"),rel.encode("utf8"),mot2.string.encode("utf8"),compute_context(sentence, match).encode("utf8")))
+
+sources = [
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_1%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20III_Chapitre%201%20-%20Wikisource.htm",
+]
+
+sources = [
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_1%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_10%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_11%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_12%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_13%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_14%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_2%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_3%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_4%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_5%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_6%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_7%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_8%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_9%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20III_Chapitre%201%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20III_Chapitre%202%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20III_Chapitre%203%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20III_Chapitre%204%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20III_Chapitre%205%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20II_Chapitre%201%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20II_Chapitre%202%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20II_Chapitre%203%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20II_Chapitre%204%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20II_Chapitre%205%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20IV_Chapitre%201%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20IV_Chapitre%202%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20IV_Chapitre%203%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20IV_Chapitre%204%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20IV_Chapitre%205%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20IV_Chapitre%206%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20IV_Chapitre%207%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20I_Chapitre%201%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20I_Chapitre%202%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20I_Chapitre%203%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20I_Chapitre%204%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20I_Chapitre%205%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20I_Chapitre%206%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VII_Chapitre%201%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VII_Chapitre%202%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VII_Chapitre%203%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VII_Chapitre%204%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VII_Chapitre%205%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VII_Chapitre%206%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VI_Chapitre%201%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VI_Chapitre%202%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VI_Chapitre%203%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VI_Chapitre%204%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20VI_Chapitre%205%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20V_Chapitre%201%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20V_Chapitre%202%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20V_Chapitre%203%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20V_Chapitre%204%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20V_Chapitre%205%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20V_Chapitre%206%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_I%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_II%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_III%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_IV%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_IX%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_V%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_VI%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_VII%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_VIII%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_X%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_XI%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20B%EAte%20humaine_XII%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Cur%E9e_I%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Cur%E9e_II%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Cur%E9e_III%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Cur%E9e_IV%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Cur%E9e_V%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Cur%E9e_VI%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Cur%E9e_VII%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_I%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_II%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_III%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_IV%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_V%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_VI%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/La%20Fortune%20des%20Rougon_VII%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Le%20Ventre%20de%20Paris_I%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Le%20Ventre%20de%20Paris_II%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Le%20Ventre%20de%20Paris_III%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Le%20Ventre%20de%20Paris_IV%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Le%20Ventre%20de%20Paris_V%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Le%20Ventre%20de%20Paris_VI%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%201%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%2010%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%2011%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%2012%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%2013%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%2014%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%202%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%203%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%204%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%205%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%206%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%207%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%208%20-%20Wikisource.htm",
+    "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%209%20-%20Wikisource.htm"
+]
+
+with open("output.txt", "w") as f :
+    print "analyse sources..."
+    for url in sources :
+        print "analyse source : "+url
+
+        # crawl
+        response = requests.get(url)
+        h = html2text.HTML2Text()
+        try :
+            text = h.handle(response.content.decode("utf8"))
+        except :
+            text = h.handle(response.content.decode("latin1"))
+
+        # parse
+        text = parsetree(text, relations=True, lemmata=True)
+
+        for sentence in text :
+            # A + N
+            for match in search(u'{JJ|RB} {NN|NNS|NNP}', sentence) :
+                rel = relations.get(match.string, relations.get(singularize_text(match.string), False))
+                #print(match.string, rel)
+                if rel :
+                    write_context(f, match.group(2), rel, match.group(1), sentence, match)
+
+            # N + A
+            motifs = [
+                u'{NN|NNS|NNP} PP? {JJ|RB|VBN} !NN|!NNS|!NNP',
+                u'{NN|NNS|NNP} PP? {JJ|RB|VBN} et {JJ|RB|VBN} !NN|!NNS|!NNP',
+                u'{NN|NNS|NNP} PP? {JJ|RB|VBN} , {JJ|RB|VBN} et {JJ|RB|VBN} !NN|!NNS|!NNP',
+                u'{NN|NNS|NNP} PP? {JJ|RB|VBN} , {JJ|RB|VBN} , {JJ|RB|VBN} !NN|!NNS|!NNP'
+            ]
+            for motif in motifs :
+                for match in search(motif, sentence) :
+                    for i in range(2, 4) :
+                        try :
+                            candidate = "%s %s"%(match.group(1).string, match.group(i).string)
+                            rel = relations.get(candidate, relations.get(singularize_text(candidate), False))
+                            #print(match.string, candidate, rel)
+                            if rel :
+                                write_context(f, match.group(1), rel, match.group(i), sentence, match)
+                        except :
+                            pass
+
+            # N-part de N
+            for match in search(u'{NN|NNS|NNP} IN DT? {NN|NNS|NNP}', sentence) :
+                candidate = "%s %s"%(match.group(2).string, match.group(1).string)
+                rel = relations.get(candidate, relations.get(singularize_text(candidate), False))
+                #print(match.string, candidate, "r_has_part")
+                if rel :
+                    write_context(f, match.group(2), "r_has_part", match.group(1), sentence, match)
+
+            # agent + V
+            motifs = [
+                u'{NN|NNS|NNP} VB RB? {VBN}',
+                u'{NN|NNS|NNP} {VB} RB? !VBN'
+            ]
+            for motif in motifs :
+                for match in search(motif, sentence) :
+                    candidate = "%s %s"%(match.group(1).string, match.group(2).string)
+                    rel = relations.get(candidate, relations.get(singularize_text(candidate), False))
+                    #print(1, match.string, candidate, "r_has_agent")
+                    if rel :
+                        write_context(f, match.group(2), "r_has_agent", match.group(1), sentence, match)
+
+            # V + patient
+            for match in search(u'VB? {VB|VBN} DT|PRP$|PRP JJ|RB? {NN|NNS|NNP}', sentence) :
+                candidate = "%s %s"%(match.group(2).string, match.group(1).string)
+                rel = relations.get(candidate, relations.get(singularize_text(candidate), False))
+                #print(2, match.string, candidate, "r_has_patient")
+                if rel :
+                    write_context(f, match.group(2), "r_has_patient", match.group(1), sentence, match)
+
+            """
+            # V + instrument
+            motifs = [
+                u'VB {VBN} NP? avec|par DT|PRP$|PRP JJ|RB? {NN|NNS|NNP}',
+                u'{VB} NP? avec|par DT|PRP$|PRP JJ|RB? {NN|NNS|NNP}'
+            ]
+            for motif in motifs :
+                for match in search(motif, sentence) :
+                    candidate = "%s %s"%(match.group(2).string, match.group(1).string)
+                    rel = relations.get(candidate, relations.get(singularize_text(candidate), False))
+                    #print(match.string, candidate, rel)
+                    if rel :
+                        #print "%s;%s;%s;%s"%(match.group(2).string,rel,match.group(1).string,sentence.string)
+                        pass
+            """
