@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import sys
 import cPickle
 import requests
 import html2text
@@ -9,8 +11,8 @@ from pattern.search import search
 
 # load relations
 print "load relations..."
-relations = cPickle.load(open("relations/relations.pickled","rb"))
-#relations = {}
+#relations = cPickle.load(open("relations/relations.pickled","rb"))
+relations = {}
 
 def submit_context(context) :
     url = "http://www.jeuxdemots.org/HACK/hack-submit.php"
@@ -39,10 +41,12 @@ def compute_context(sentence, match) :
 def write_context(f, mot1, rel, mot2, sentence, match) :
     f.write("%s;%s;%s;%s\n"%(mot1.string.encode("utf8"),rel.encode("utf8"),mot2.string.encode("utf8"),compute_context(sentence, match).encode("utf8")))
 
+"""
 sources = [
     "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_1%20-%20Wikisource.htm",
     "http://www.jeuxdemots.org/HACK/hack_texts/Germinal_Partie%20III_Chapitre%201%20-%20Wikisource.htm",
 ]
+"""
 
 sources = [
     "http://www.jeuxdemots.org/HACK/hack_texts/Au%20bonheur%20des%20dames_1%20-%20Wikisource.htm",
@@ -147,11 +151,117 @@ sources = [
     "http://www.jeuxdemots.org/HACK/hack_texts/Nana_Chapitre%209%20-%20Wikisource.htm"
 ]
 
+fileList = [
+    "Au_bonheur_des_dames_1_-_Wikisource.htm",
+    "Au_bonheur_des_dames_10_-_Wikisource.htm",
+    "Au_bonheur_des_dames_11_-_Wikisource.htm",
+    "Au_bonheur_des_dames_12_-_Wikisource.htm",
+    "Au_bonheur_des_dames_13_-_Wikisource.htm",
+    "Au_bonheur_des_dames_14_-_Wikisource.htm",
+    "Au_bonheur_des_dames_2_-_Wikisource.htm",
+    "Au_bonheur_des_dames_3_-_Wikisource.htm",
+    "Au_bonheur_des_dames_4_-_Wikisource.htm",
+    "Au_bonheur_des_dames_5_-_Wikisource.htm",
+    "Au_bonheur_des_dames_6_-_Wikisource.htm",
+    "Au_bonheur_des_dames_7_-_Wikisource.htm",
+    "Au_bonheur_des_dames_8_-_Wikisource.htm",
+    "Au_bonheur_des_dames_9_-_Wikisource.htm",
+    "Germinal_Partie_III_Chapitre_1_-_Wikisource.htm",
+    "Germinal_Partie_III_Chapitre_2_-_Wikisource.htm",
+    "Germinal_Partie_III_Chapitre_3_-_Wikisource.htm",
+    "Germinal_Partie_III_Chapitre_4_-_Wikisource.htm",
+    "Germinal_Partie_III_Chapitre_5_-_Wikisource.htm",
+    "Germinal_Partie_II_Chapitre_1_-_Wikisource.htm",
+    "Germinal_Partie_II_Chapitre_2_-_Wikisource.htm",
+    "Germinal_Partie_II_Chapitre_3_-_Wikisource.htm",
+    "Germinal_Partie_II_Chapitre_4_-_Wikisource.htm",
+    "Germinal_Partie_II_Chapitre_5_-_Wikisource.htm",
+    "Germinal_Partie_IV_Chapitre_1_-_Wikisource.htm",
+    "Germinal_Partie_IV_Chapitre_2_-_Wikisource.htm",
+    "Germinal_Partie_IV_Chapitre_3_-_Wikisource.htm",
+    "Germinal_Partie_IV_Chapitre_4_-_Wikisource.htm",
+    "Germinal_Partie_IV_Chapitre_5_-_Wikisource.htm",
+    "Germinal_Partie_IV_Chapitre_6_-_Wikisource.htm",
+    "Germinal_Partie_IV_Chapitre_7_-_Wikisource.htm",
+    "Germinal_Partie_I_Chapitre_1_-_Wikisource.htm",
+    "Germinal_Partie_I_Chapitre_2_-_Wikisource.htm",
+    "Germinal_Partie_I_Chapitre_3_-_Wikisource.htm",
+    "Germinal_Partie_I_Chapitre_4_-_Wikisource.htm",
+    "Germinal_Partie_I_Chapitre_5_-_Wikisource.htm",
+    "Germinal_Partie_I_Chapitre_6_-_Wikisource.htm",
+    "Germinal_Partie_VII_Chapitre_1_-_Wikisource.htm",
+    "Germinal_Partie_VII_Chapitre_2_-_Wikisource.htm",
+    "Germinal_Partie_VII_Chapitre_3_-_Wikisource.htm",
+    "Germinal_Partie_VII_Chapitre_4_-_Wikisource.htm",
+    "Germinal_Partie_VII_Chapitre_5_-_Wikisource.htm",
+    "Germinal_Partie_VII_Chapitre_6_-_Wikisource.htm",
+    "Germinal_Partie_VI_Chapitre_1_-_Wikisource.htm",
+    "Germinal_Partie_VI_Chapitre_2_-_Wikisource.htm",
+    "Germinal_Partie_VI_Chapitre_3_-_Wikisource.htm",
+    "Germinal_Partie_VI_Chapitre_4_-_Wikisource.htm",
+    "Germinal_Partie_VI_Chapitre_5_-_Wikisource.htm",
+    "Germinal_Partie_V_Chapitre_1_-_Wikisource.htm",
+    "Germinal_Partie_V_Chapitre_2_-_Wikisource.htm",
+    "Germinal_Partie_V_Chapitre_3_-_Wikisource.htm",
+    "Germinal_Partie_V_Chapitre_4_-_Wikisource.htm",
+    "Germinal_Partie_V_Chapitre_5_-_Wikisource.htm",
+    "Germinal_Partie_V_Chapitre_6_-_Wikisource.htm",
+    "La_Bete_humaine_I_-_Wikisource.htm",
+    "La_Bete_humaine_II_-_Wikisource.htm",
+    "La_Bete_humaine_III_-_Wikisource.htm",
+    "La_Bete_humaine_IV_-_Wikisource.htm",
+    "La_Bete_humaine_IX_-_Wikisource.htm",
+    "La_Bete_humaine_V_-_Wikisource.htm",
+    "La_Bete_humaine_VI_-_Wikisource.htm",
+    "La_Bete_humaine_VII_-_Wikisource.htm",
+    "La_Bete_humaine_VIII_-_Wikisource.htm",
+    "La_Bete_humaine_X_-_Wikisource.htm",
+    "La_Bete_humaine_XI_-_Wikisource.htm",
+    "La_Bete_humaine_XII_-_Wikisource.htm",
+    "La_Curee_I_-_Wikisource.htm",
+    "La_Curee_II_-_Wikisource.htm",
+    "La_Curee_III_-_Wikisource.htm",
+    "La_Curee_IV_-_Wikisource.htm",
+    "La_Curee_V_-_Wikisource.htm",
+    "La_Curee_VI_-_Wikisource.htm",
+    "La_Curee_VII_-_Wikisource.htm",
+    "La_Fortune_des_Rougon_I_-_Wikisource.htm",
+    "La_Fortune_des_Rougon_II_-_Wikisource.htm",
+    "La_Fortune_des_Rougon_III_-_Wikisource.htm",
+    "La_Fortune_des_Rougon_IV_-_Wikisource.htm",
+    "La_Fortune_des_Rougon_V_-_Wikisource.htm",
+    "La_Fortune_des_Rougon_VI_-_Wikisource.htm",
+    "La_Fortune_des_Rougon_VII_-_Wikisource.htm",
+    "Le_Ventre_de_Paris_I_-_Wikisource.htm",
+    "Le_Ventre_de_Paris_II_-_Wikisource.htm",
+    "Le_Ventre_de_Paris_III_-_Wikisource.htm",
+    "Le_Ventre_de_Paris_IV_-_Wikisource.htm",
+    "Le_Ventre_de_Paris_V_-_Wikisource.htm",
+    "Le_Ventre_de_Paris_VI_-_Wikisource.htm",
+    "Nana_Chapitre_1_-_Wikisource.htm",
+    "Nana_Chapitre_10_-_Wikisource.htm",
+    "Nana_Chapitre_11_-_Wikisource.htm",
+    "Nana_Chapitre_12_-_Wikisource.htm",
+    "Nana_Chapitre_13_-_Wikisource.htm",
+    "Nana_Chapitre_14_-_Wikisource.htm",
+    "Nana_Chapitre_2_-_Wikisource.htm",
+    "Nana_Chapitre_3_-_Wikisource.htm",
+    "Nana_Chapitre_4_-_Wikisource.htm",
+    "Nana_Chapitre_5_-_Wikisource.htm",
+    "Nana_Chapitre_6_-_Wikisource.htm",
+    "Nana_Chapitre_7_-_Wikisource.htm",
+    "Nana_Chapitre_8_-_Wikisource.htm",
+    "Nana_Chapitre_9_-_Wikisource.htm"
+]
+
+folder = os.path.abspath(os.path.dirname(sys.argv[0]))
+
 with open("output.txt", "w") as f :
     print "analyse sources..."
-    for url in sources :
-        print "analyse source : "+url
-
+    for file in fileList:
+        file = os.path.join(os.path.join(folder,"100files"),file)
+        print "analyse source : "+file
+        """
         # crawl
         response = requests.get(url)
         h = html2text.HTML2Text()
@@ -159,7 +269,9 @@ with open("output.txt", "w") as f :
             text = h.handle(response.content.decode("utf8"))
         except :
             text = h.handle(response.content.decode("latin1"))
-
+        """
+        with open(file) as textfile :
+            text = textfile.read()
         # parse
         text = parsetree(text, relations=True, lemmata=True)
 
@@ -167,7 +279,7 @@ with open("output.txt", "w") as f :
             # A + N
             for match in search(u'{JJ|RB} {NN|NNS|NNP}', sentence) :
                 rel = relations.get(match.string, relations.get(singularize_text(match.string), False))
-                #print(match.string, rel)
+                print(0, match.string, rel)
                 if rel :
                     write_context(f, match.group(2), rel, match.group(1), sentence, match)
 
@@ -184,8 +296,8 @@ with open("output.txt", "w") as f :
                         try :
                             candidate = "%s %s"%(match.group(1).string, match.group(i).string)
                             rel = relations.get(candidate, relations.get(singularize_text(candidate), False))
-                            #print(match.string, candidate, rel)
-                            if rel :
+                            print(1, match.string, candidate, rel)
+                            if rel and rel not in ["r_has_patient", "r_has_agent"]:
                                 write_context(f, match.group(1), rel, match.group(i), sentence, match)
                         except :
                             pass
@@ -194,7 +306,7 @@ with open("output.txt", "w") as f :
             for match in search(u'{NN|NNS|NNP} IN DT? {NN|NNS|NNP}', sentence) :
                 candidate = "%s %s"%(match.group(2).string, match.group(1).string)
                 rel = relations.get(candidate, relations.get(singularize_text(candidate), False))
-                #print(match.string, candidate, "r_has_part")
+                print(2, match.string, candidate, "r_has_part")
                 if rel :
                     write_context(f, match.group(2), "r_has_part", match.group(1), sentence, match)
 
@@ -207,7 +319,7 @@ with open("output.txt", "w") as f :
                 for match in search(motif, sentence) :
                     candidate = "%s %s"%(match.group(1).string, match.group(2).string)
                     rel = relations.get(candidate, relations.get(singularize_text(candidate), False))
-                    #print(1, match.string, candidate, "r_has_agent")
+                    print(3, match.string, candidate, "r_has_agent")
                     if rel :
                         write_context(f, match.group(2), "r_has_agent", match.group(1), sentence, match)
 
@@ -215,9 +327,9 @@ with open("output.txt", "w") as f :
             for match in search(u'VB? {VB|VBN} DT|PRP$|PRP JJ|RB? {NN|NNS|NNP}', sentence) :
                 candidate = "%s %s"%(match.group(2).string, match.group(1).string)
                 rel = relations.get(candidate, relations.get(singularize_text(candidate), False))
-                #print(2, match.string, candidate, "r_has_patient")
+                print(4, match.string, candidate, "r_has_patient")
                 if rel :
-                    write_context(f, match.group(2), "r_has_patient", match.group(1), sentence, match)
+                    write_context(f, match.group(1), "r_has_patient", match.group(2), sentence, match)
 
             """
             # V + instrument
