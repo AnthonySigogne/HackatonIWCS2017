@@ -1,7 +1,7 @@
 #!/usr/sfw/bin/python
 # -*- coding: utf-8 -*-
 
-import glob, os, re, sys, urllib.request
+import glob, os, re, sys, urllib.request, requests
 
 
 
@@ -160,6 +160,25 @@ replacements["œ"] = "oe"
 replacements["ü"] = "u"
 replacements["ù"] = "u"
 replacements["ú"] = "u"
+
+
+def submit_context(context) :
+    print ("preparing query")
+    url = "http://www.jeuxdemots.org/HACK/hack-submit.php"
+    
+    #querystring = {"relations_text":context,"submitter":"anthony@byprog.com","mdp":"22w2MSsj","submit":"Soumettre"}
+    querystring = {"relations_text":context,"submitter":"test@lirmm.fr","mdp":"TEST","submit":"Soumettre"}
+    payload = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"url\"\r\n\r\nhttps://www.byprog.com\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--"
+    headers = {
+        'content-type': "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW",
+        'cache-control': "no-cache",
+        }
+
+    print ("sending query")
+    response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
+    print ("getting query results")
+    return response.content
+
 
 def removeAccent(word, replacements):
     for letter in replacements:
@@ -411,6 +430,7 @@ for file in fileList:
 # Open the list of relations and find the real contexts
 triplets = {}
 output = open(os.path.join(folder,"foundRelations.corrected.txt"),"w",encoding="utf8")
+requestOutput = open(os.path.join(folder,"foundRelations.feedback.txt"),"w",encoding="utf8")
 
 for line in open(os.path.join(folder,"foundRelations.txt"),"r",encoding="utf8"):
     # ignore the line if it contains "wiki"
@@ -467,8 +487,14 @@ for line in open(os.path.join(folder,"foundRelations.txt"),"r",encoding="utf8"):
             if ngram in ngrams and not triplet in triplets:
                 triplets[triplet] = 1
                 #print("|"+ngram+"||"+wordList[ngramPositionInWordlist]+"||||"+str(wordList))
-                output.writelines(word1+";"+relType+";"+word2+";"+outputSentence(ngram, ngramSize, wordList, ngramPositionInWordlist - (countdown+1), ngrams, text, previousWords, nextWords, previousTokens, nextTokens, firstWord, secondWord)+"\n")
+                sentLine = word1+";"+relType+";"+word2+";"+outputSentence(ngram, ngramSize, wordList, ngramPositionInWordlist - (countdown+1), ngrams, text, previousWords, nextWords, previousTokens, nextTokens, firstWord, secondWord)
+                output.writelines(sentLine+"\n")                
+                feedback = submit_context(sentLine)
+                print(feedback)
+                requestOutput.writelines(feedback+"\n")
             #else:
             #    output.writelines("!!!!!!!!!!!!!!!!!!!!!!!!!!!"+" not found "+ngram+"\n")
             #    print("not found "+ngram)
+
 output.close()
+requestOutput.close()
